@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Face Filter</title>
+    <style>
+        body { margin: 0; background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .box { width: 90%; max-width: 400px; background: #1e293b; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .video-container { position: relative; width: 100%; border-radius: 15px; overflow: hidden; background: #000; margin-bottom: 20px; aspect-ratio: 4/3; }
+        #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #canvas { display: none; }
+        .emoji-list { display: flex; justify-content: center; gap: 15px; font-size: 30px; margin-bottom: 20px; }
+        .emoji-item { cursor: pointer; padding: 5px; border-radius: 10px; transition: 0.2s; border: 2px solid transparent; }
+        .emoji-item.active { border-color: #3b82f6; background: #334155; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+        #status { font-size: 12px; color: #94a3b8; margin-top: 15px; }
+        #loader { display: none; margin: 10px auto; width: 20px; height: 20px; border: 2px solid #fff; border-top-color: #3b82f6; border-radius: 50%; animation: s 1s linear infinite; }
+        @keyframes s { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h3>Emoji Face Filter</h3>
+    <div class="video-container">
+        <video id="video" autoplay playsinline muted></video>
+    </div>
+
+    <div class="emoji-list">
+        <span class="emoji-item active" onclick="setEmoji('😎', this)">😎</span>
+        <span class="emoji-item" onclick="setEmoji('😂', this)">😂</span>
+        <span class="emoji-item" onclick="setEmoji('🤡', this)">🤡</span>
+        <span class="emoji-item" onclick="setEmoji('🔥', this)">🔥</span>
+    </div>
+
+    <button class="btn" id="initBtn">FILTRNI YOQISH</button>
+    <div id="loader"></div>
+    <div id="status">Kamerani yoqish uchun tugmani bosing</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
